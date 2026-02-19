@@ -61,9 +61,9 @@ class ProfanityPlugin(PipelinePlugin):
     def check_dependencies(self):
         missing = []
         try:
-            import whisper  # noqa
+            import faster_whisper  # noqa
         except ImportError:
-            missing.append("openai-whisper")
+            missing.append("faster-whisper")
         result = subprocess.run(["cleanvid", "--help"], capture_output=True)
         if result.returncode != 0 and b"cleanvid" not in result.stdout + result.stderr:
             missing.append("cleanvid (pip install cleanvid)")
@@ -87,24 +87,33 @@ class ProfanityPlugin(PipelinePlugin):
         return output_path
 
     def _generate_srt(self, video_path: str, settings: dict, log_callback=None) -> str:
-        self.log(f"Transcribing with Whisper ({settings['whisper_model']})...", log_callback)
+        self.log(f"Transcribing with faster-whisper ({settings['whisper_model']})...", log_callback)
         try:
-            import whisper
-            from whisper.utils import WriteSRT
+            from faster_whisper import WhisperModel
         except ImportError:
-            raise RuntimeError("openai-whisper is not installed. Run: pip install openai-whisper")
+            raise RuntimeError("faster-whisper is not installed. Run: pip install faster-whisper")
 
-        model = whisper.load_model(settings["whisper_model"])
-        result = model.transcribe(video_path, language=settings.get("language", "en"))
+        model = WhisperModel(settings["whisper_model"], device="cpu", compute_type="int8")
+        segments, _info = model.transcribe(video_path, language=settings.get("language", "en"))
 
         # Write SRT next to input file
         srt_path = str(Path(video_path).with_suffix(".srt"))
         with open(srt_path, "w", encoding="utf-8") as f:
-            writer = WriteSRT(output_dir=str(Path(srt_path).parent))
-            writer.write_result(result, f, options={})
+            for i, seg in enumerate(segments, start=1):
+                start = self._format_timestamp(seg.start)
+                end = self._format_timestamp(seg.end)
+                f.write(f"{i}\n{start} --> {end}\n{seg.text.strip()}\n\n")
 
         self.log(f"SRT saved to: {srt_path}", log_callback)
         return srt_path
+
+    @staticmethod
+    def _format_timestamp(seconds: float) -> str:
+        h = int(seconds // 3600)
+        m = int((seconds % 3600) // 60)
+        s = int(seconds % 60)
+        ms = int((seconds - int(seconds)) * 1000)
+        return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
 
     def _run_cleanvid(self, input_path: str, output_path: str, srt_path: str, settings: dict, log_callback=None):
         self.log("Running cleanvid...", log_callback)
