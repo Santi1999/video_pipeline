@@ -21,9 +21,8 @@ cleanvid>=1.7.0
 # ── Silence Removal ──
 auto-editor>=24.0.0
 
-# ── Sensitive Info Blur ──
+# ── Sensitive Info Blur (face detection only — easyocr removed, requires PyTorch) ──
 opencv-python
-easyocr
 
 # ── Auto Clip & Reels ──
 scenedetect[opencv]>=0.6.2
