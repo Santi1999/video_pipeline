@@ -10,7 +10,7 @@
 #   Ubuntu:   sudo apt install ffmpeg
 
 # ── GUI ──
-PyQt6s
+PyQt6
 
 # ── Transcription (for Whisper-based SRT generation & cleanvid integration) ──
 faster-whisper>=1.0.0
