@@ -1,0 +1,34 @@
+# ─────────────────────────────────────────────
+# Video Automation Pipeline — Python Dependencies
+# ─────────────────────────────────────────────
+# Install all at once:
+#   pip install -r requirements.txt
+#
+# NOTE: FFmpeg must be installed separately (not via pip):
+#   Windows:  https://ffmpeg.org/download.html  or  winget install ffmpeg
+#   macOS:    brew install ffmpeg
+#   Ubuntu:   sudo apt install ffmpeg
+
+# ── GUI ──
+PyQt6s
+
+# ── Transcription (for Whisper-based SRT generation & cleanvid integration) ──
+faster-whisper>=1.0.0
+
+# ── Profanity Removal ──
+cleanvid>=1.7.0
+
+# ── Silence Removal ──
+auto-editor>=24.0.0
+
+# ── Sensitive Info Blur ──
+opencv-python
+easyocr
+
+# ── Auto Clip & Reels ──
+scenedetect[opencv]>=0.6.2
+moviepy>=1.0.3
+
+# ── Optional: Microsoft Presidio for advanced PII detection ──
+# presidio-analyzer>=2.2.0
+# presidio-image-redactor>=0.0.48
